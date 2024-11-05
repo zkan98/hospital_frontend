@@ -1,0 +1,14 @@
+.main-content {
+  display: flex;
+  flex-direction: row;
+}
+
+.hospital-list {
+  width: 30%; /* 사이드바 비율 */
+  padding: 20px;
+  border-right: 1px solid #ccc;
+}
+
+#map {
+  width: 70%; /* 지도 비율 */
+}
