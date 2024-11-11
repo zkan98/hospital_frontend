@@ -1,19 +1,6 @@
-// src/components/Reviews.js
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import React from 'react';
 
-const Reviews = ({ hospitalId }) => {
-  const [reviews, setReviews] = useState([]);
-
-  useEffect(() => {
-    const fetchReviews = async () => {
-      const response = await axios.get(`/api/reviews?hospitalId=${hospitalId}`);
-      setReviews(response.data);
-    };
-
-    fetchReviews();
-  }, [hospitalId]);
-
+const Reviews = ({ reviews }) => {
   return (
       <div>
         <h2>리뷰</h2>
@@ -22,8 +9,8 @@ const Reviews = ({ hospitalId }) => {
         ) : (
             reviews.map((review) => (
                 <div key={review.id}>
-                  <p>{review.text}</p>
-                  <p>평점: {review.rating}</p>
+                  <p>{review.content}</p>
+                  <p>평점: {review.rating}점</p>
                 </div>
             ))
         )}

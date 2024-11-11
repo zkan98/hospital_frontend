@@ -1,17 +1,16 @@
+// src/components/Pagination.js
 import React from 'react';
 
-const Pagination = ({ totalPages, currentPage, onPageChange }) => {
-  const handleClick = (page) => {
-    onPageChange(page);
-  };
+const Pagination = ({ currentPage, totalItems, itemsPerPage, onPageChange }) => {
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
 
   return (
       <div className="pagination">
-        {[...Array(totalPages)].map((_, index) => (
+        {Array.from({ length: totalPages }, (_, index) => (
             <button
-                key={index}
-                onClick={() => handleClick(index + 1)}
-                disabled={currentPage === index + 1}
+                key={index + 1}
+                onClick={() => onPageChange(index + 1)}
+                className={currentPage === index + 1 ? 'active' : ''}
             >
               {index + 1}
             </button>

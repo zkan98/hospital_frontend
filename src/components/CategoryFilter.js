@@ -1,7 +1,7 @@
 // src/components/CategoryFilter.js
 import React from 'react';
 
-const CategoryFilter = ({ categories, selectedCategory, setSelectedCategory }) => {
+const CategoryFilter = ({ categories = [], selectedCategory, setSelectedCategory }) => {
   return (
       <div className="category-filter">
         <select
@@ -9,7 +9,7 @@ const CategoryFilter = ({ categories, selectedCategory, setSelectedCategory }) =
             onChange={(e) => setSelectedCategory(e.target.value)}
         >
           <option value="">전체</option>
-          {categories.map((category) => (
+          {(categories || []).map((category) => (
               <option key={category} value={category}>
                 {category}
               </option>
@@ -18,5 +18,7 @@ const CategoryFilter = ({ categories, selectedCategory, setSelectedCategory }) =
       </div>
   );
 };
+
+
 
 export default CategoryFilter;
