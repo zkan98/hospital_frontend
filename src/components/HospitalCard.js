@@ -1,3 +1,4 @@
+// HospitalCard.js
 import React from 'react';
 
 const HospitalCard = ({ hospital, onClick }) => {

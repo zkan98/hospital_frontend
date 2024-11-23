@@ -1,0 +1,70 @@
+.review-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 15px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background-color: #ffffff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.review-form h2 {
+  margin: 0 0 10px;
+  font-size: 1.2rem;
+  color: #333;
+}
+
+.rating-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rating-stars {
+  display: flex;
+}
+
+.star {
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #ccc;
+  transition: color 0.2s;
+}
+
+.star.selected {
+  color: #FFD700; /* 별점 선택 색상 */
+}
+
+.star:hover,
+.star:hover ~ .star {
+  color: #FFD700;
+}
+
+.review-textarea {
+  padding: 10px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  resize: vertical;
+  min-height: 80px;
+  font-size: 1rem;
+}
+
+.file-input {
+  border: none;
+  font-size: 0.9rem;
+}
+
+.submit-button {
+  padding: 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.submit-button:hover {
+  background-color: #0056b3;
+}

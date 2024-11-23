@@ -4,6 +4,7 @@
   flex-direction: column;
   height: 100vh;
   background-color: #f0f2f5; /* 전체 배경색 추가 */
+  overflow: hidden; /* 전체 페이지 스크롤 제거 */
 }
 
 /* 헤더 스타일 */
@@ -54,31 +55,36 @@ header input[type="text"]:focus {
 .content-container {
   display: flex;
   flex: 1;
+  height: calc(100vh - 60px); /* 헤더 높이를 제외한 영역 */
+  overflow: hidden; /* 내부 콘텐츠 스크롤 관리 */
 }
 
-/* 리스트 사이드바 */
+/* 병원 리스트 사이드바 */
 .sidebar {
-  width: 25%;
+  width: 22%;
   padding: 8px;
   border-right: 1px solid #ddd;
-  overflow-y: auto;
-  max-height: 100vh;
   background-color: #ffffff; /* 리스트 배경색 */
   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); /* 오른쪽 그림자 */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow-y: auto; /* 병원 목록 스크롤 활성화 */
 }
 
-/* 리스트 내부 스크롤 설정 */
+/* 리스트 내부 컨테이너 */
 .list-container {
+  flex-grow: 1;
   overflow-y: auto;
-  max-height: 60vh;
-  padding: 8px;
+  padding-bottom: 60px; /* 페이지네이션 버튼을 위한 여유 공간 */
 }
 
 /* 지도 영역 */
 .map-container {
-  width: 100%;
-  height: 100%;
+  width: 75%; /* 나머지 공간을 차지 */
+  height: 100%; /* 전체 높이 */
   position: relative;
+  overflow: hidden; /* 지도 내부에 스크롤 방지 */
 }
 
 /* 병원 리스트 스타일 */
@@ -106,11 +112,16 @@ header input[type="text"]:focus {
 
 /* 페이지네이션 컨테이너 */
 .pagination {
+  position: sticky;
+  bottom: 0;
   display: flex;
   justify-content: center;
   padding: 10px;
+  background-color: #ffffff;
+  border-top: 1px solid #ddd;
 }
 
+/* 페이지네이션 버튼 스타일 */
 .pagination button {
   margin: 0 5px;
   padding: 6px 12px;
@@ -133,7 +144,7 @@ header input[type="text"]:focus {
 /* 상세 정보 패널 스타일 */
 .hospital-detail-panel {
   position: absolute;
-  right: 57%;
+  right: 55%;
   width: 20%;
   height: 90%;
   background-color: #ffffff;
@@ -241,4 +252,59 @@ header input[type="text"]:focus {
   margin-bottom: 10px;
   background-color: #ffffff;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+/* 별점 섹션 스타일 */
+.rating-section {
+  margin-top: 10px;
+}
+
+.rating-section label {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #555555;
+  margin-bottom: 5px;
+  display: block;
+}
+
+.rating-stars {
+  display: flex;
+  gap: 5px;
+}
+
+.rating-stars .star {
+  font-size: 1.5rem;
+  color: #ccc; /* 기본 별 색상 */
+  cursor: pointer;
+  transition: color 0.2s ease-in-out, transform 0.2s ease-in-out;
+}
+
+.rating-stars .star:hover,
+.rating-stars .star.hovered {
+  color: #ffcc00; /* 호버 상태 별 색상 */
+}
+
+.rating-stars .star.selected {
+  color: #ffa500; /* 선택된 별 색상 */
+  transform: scale(1.1); /* 선택된 별 확대 효과 */
+}
+
+.rating-stars .star:hover ~ .star {
+  color: #ccc; /* 호버 이후 별은 기본 색상 유지 */
+}
+
+.suggestions {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  position: absolute;
+  background-color: white;
+  border: 1px solid #ddd;
+  width: 100%;
+  max-height: 150px;
+  overflow-y: auto;
+  z-index: 1000; /* 검색 제안을 상단에 표시 */
+}
+
+.suggestions li:hover {
+  background-color: #f0f0f0;
 }

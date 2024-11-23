@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axiosInstance from '../axiosInstance';
+import '../ReviewForm.css';
 
 const ReviewForm = ({ hospitalId, onReviewSubmit }) => {
   const [rating, setRating] = useState(1);
+  const [hoverRating, setHoverRating] = useState(0); // 호버 상태의 별점 추가
   const [content, setContent] = useState('');
   const [image, setImage] = useState(null);
   const [userId, setUserId] = useState(null);
@@ -37,13 +39,13 @@ const ReviewForm = ({ hospitalId, onReviewSubmit }) => {
       alert('리뷰가 제출되었습니다.');
       onReviewSubmit(response.data);
       setRating(1);
+      setHoverRating(0); // 초기화
       setContent('');
       setImage(null);
     } catch (error) {
       console.error('리뷰 제출 오류:', error);
-      // 에러 응답에서 메시지를 읽어 사용자에게 표시
       if (error.response && error.response.data && error.response.data.message) {
-        alert(error.response.data.message);  // 백엔드에서 받은 에러 메시지를 사용자에게 표시
+        alert(error.response.data.message);
       } else {
         alert('리뷰 제출에 실패했습니다. 다시 시도해주세요.');
       }
@@ -51,21 +53,32 @@ const ReviewForm = ({ hospitalId, onReviewSubmit }) => {
   };
 
   return (
-      <div>
+      <div className="review-form">
         <h2>리뷰 작성</h2>
-        <label>별점 선택:</label>
-        <select value={rating} onChange={(e) => setRating(e.target.value)}>
-          {[1, 2, 3, 4, 5].map((num) => (
-              <option key={num} value={num}>{num}점</option>
-          ))}
-        </select>
+        <div className="rating-section">
+          <label>별점 선택:</label>
+          <div className="rating-stars">
+            {[1, 2, 3, 4, 5].map((num) => (
+                <span
+                    key={num}
+                    className={`star ${hoverRating >= num ? 'hovered' : ''} ${rating >= num ? 'selected' : ''}`}
+                    onClick={() => setRating(num)}
+                    onMouseEnter={() => setHoverRating(num)}
+                    onMouseLeave={() => setHoverRating(0)}
+                >
+              ★
+            </span>
+            ))}
+          </div>
+        </div>
         <textarea
+            className="review-textarea"
             placeholder="리뷰 작성 (선택 사항)"
             value={content}
             onChange={(e) => setContent(e.target.value)}
         />
-        <input type="file" onChange={handleFileChange} />
-        <button onClick={handleSubmit}>리뷰 제출</button>
+        <input type="file" className="file-input" onChange={handleFileChange} />
+        <button className="submit-button" onClick={handleSubmit}>리뷰 제출</button>
       </div>
   );
 };

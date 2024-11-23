@@ -1,3 +1,4 @@
+// HospitalList.js
 import React from 'react';
 import HospitalCard from './HospitalCard';
 

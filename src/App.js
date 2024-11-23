@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Header from './components/Header';
 import CategoryFilter from './components/CategoryFilter';
 import HospitalList from './components/HospitalList';
@@ -13,136 +13,103 @@ import './App.css';
 
 function App() {
   const [hospitals, setHospitals] = useState([]);
-  const [displayedHospitals, setDisplayedHospitals] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const [selectedHospital, setSelectedHospital] = useState(null);
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [userLocation, setUserLocation] = useState(null);
+  const [mapCenter, setMapCenter] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [tokens, setTokens] = useState({
-    accessToken: localStorage.getItem('accessToken'),
-    refreshToken: localStorage.getItem('refreshToken'),
-  });
+  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('accessToken'));
   const itemsPerPage = 10;
-  const categories = ['전체', '내과', '외과', '정형외과', '피부과'];
 
-  // 위치 설정
+  const handleSearch = async () => {
+    if (!searchTerm.trim()) return;
+    try {
+      const response = await axiosInstance.get('/hospitals/search', {
+        params: { name: searchTerm },
+      });
+      if (response.data.length > 0) {
+        const targetHospital = response.data[0];
+        setSelectedHospital(targetHospital);
+        setMapCenter({
+          latitude: targetHospital.latitude,
+          longitude: targetHospital.longitude,
+        });
+      } else {
+        alert('검색 결과가 없습니다.');
+      }
+    } catch (error) {
+      console.error('병원 검색 실패:', error);
+    }
+  };
+
+  const handleHospitalClick = (hospital) => {
+    setSelectedHospital(hospital);
+    setMapCenter({
+      latitude: hospital.latitude,
+      longitude: hospital.longitude,
+    });
+  };
+
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
         (position) => {
-          setUserLocation({
+          const location = {
             latitude: position.coords.latitude,
             longitude: position.coords.longitude,
-          });
+          };
+          setMapCenter(location);
         },
         (error) => {
-          console.error('Error getting location:', error);
-          setUserLocation({ latitude: 37.5665, longitude: 126.9780 }); // 서울을 기본 위치로 설정
-        }
+          const defaultLocation = { latitude: 37.5665, longitude: 126.9780 };
+          setMapCenter(defaultLocation);
+        },
+        { enableHighAccuracy: true }
     );
   }, []);
-
-  // 병원과 리뷰 데이터 가져와 평균 평점 추가
-  // App.js
-  const fetchHospitalsWithRatings = async (latitude, longitude) => {
-    try {
-      const response = await axiosInstance.get('/hospitals/nearby', {
-        params: { latitude, longitude },
-      });
-      const hospitalsData = response.data.slice(0, 40);
-
-      // 병원마다 리뷰를 가져와 평균 평점 계산
-      const hospitalsWithRatings = await Promise.all(
-          hospitalsData.map(async (hospital) => {
-            try {
-              const reviewsResponse = await axiosInstance.get(`/reviews/hospital/${hospital.id}`);
-              const reviews = reviewsResponse.data;
-              const averageRating = reviews.length
-                  ? (reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length).toFixed(1)
-                  : null;
-              return { ...hospital, averageRating };
-            } catch (error) {
-              console.error(`Error fetching reviews for hospital ${hospital.id}:`, error);
-              return { ...hospital, averageRating: null };
-            }
-          })
-      );
-
-      setHospitals(hospitalsWithRatings);
-    } catch (error) {
-      console.error("Error fetching hospital data:", error);
-    }
-  };
-
-  // 병원 데이터와 위치 정보에 따른 업데이트
-  useEffect(() => {
-    if (userLocation) {
-      fetchHospitalsWithRatings(userLocation.latitude, userLocation.longitude);
-    }
-  }, [userLocation, tokens.accessToken]);
-
-  // 로그인 및 로그아웃 핸들러
-  const handleLogin = (newTokens) => {
-    setTokens(newTokens);
-    localStorage.setItem('accessToken', newTokens.accessToken);
-    localStorage.setItem('refreshToken', newTokens.refreshToken);
-  };
-
-  const handleLogout = () => {
-    setTokens({ accessToken: null, refreshToken: null });
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-  };
-
-  // 카테고리 필터링
-  const filteredHospitals = selectedCategory
-      ? hospitals.filter((hospital) => hospital.specialty === selectedCategory)
-      : hospitals;
-
-  // 페이지네이션 적용된 병원 리스트
-  useEffect(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    setDisplayedHospitals(filteredHospitals.slice(startIndex, endIndex));
-  }, [filteredHospitals, currentPage]);
-
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
 
   return (
       <Router>
         <div className="app-container">
-          <Header isLoggedIn={!!tokens.accessToken} onLogout={handleLogout} />
+          <Header
+              isLoggedIn={isLoggedIn}
+              onLogout={() => {
+                localStorage.clear();
+                setIsLoggedIn(false);
+              }}
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              onSearch={handleSearch}
+              setSelectedHospital={setSelectedHospital}
+          />
           <Routes>
             <Route
                 path="/"
                 element={
                   <div className="content-container">
                     <div className="sidebar">
-                      <CategoryFilter
-                          categories={categories}
-                          selectedCategory={selectedCategory}
-                          setSelectedCategory={setSelectedCategory}
+                      <CategoryFilter />
+                      <HospitalList
+                          hospitals={hospitals.slice(
+                              (currentPage - 1) * itemsPerPage,
+                              currentPage * itemsPerPage
+                          )}
+                          setSelectedHospital={handleHospitalClick}
+                          selectedHospital={selectedHospital}
                       />
-                      <div className="list-container">
-                        <HospitalList
-                            hospitals={displayedHospitals}
-                            setSelectedHospital={setSelectedHospital}
-                        />
-                        <Pagination
-                            currentPage={currentPage}
-                            totalItems={filteredHospitals.length}
-                            itemsPerPage={itemsPerPage}
-                            onPageChange={handlePageChange}
-                        />
-                      </div>
+                      <Pagination
+                          currentPage={currentPage}
+                          totalItems={hospitals.length}
+                          itemsPerPage={itemsPerPage}
+                          onPageChange={setCurrentPage}
+                      />
                     </div>
                     <div className="map-container">
                       <MapComponent
-                          hospitals={filteredHospitals.slice(0, 40)}
+                          hospitals={hospitals}
+                          mapCenter={mapCenter}
+                          setMapCenter={setMapCenter}
                           setHospitals={setHospitals}
-                          userLocation={userLocation}
                           setSelectedHospital={setSelectedHospital}
+                          selectedHospital={selectedHospital}
                       />
                     </div>
                     {selectedHospital && (
@@ -154,7 +121,7 @@ function App() {
                   </div>
                 }
             />
-            <Route path="/login" element={<Login setTokens={handleLogin} />} />
+            <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
