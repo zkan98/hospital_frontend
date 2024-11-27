@@ -1,18 +1,20 @@
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
 
 const axiosInstance = axios.create({
   baseURL: 'http://localhost:8080/api',
 });
 
 // 요청 시 액세스 토큰 추가
-axiosInstance.interceptors.request.use((config) => {
-  const accessToken = localStorage.getItem('accessToken');
-  if (accessToken) {
-    config.headers.Authorization = `Bearer ${accessToken}`;
-  }
-  return config;
-}, (error) => Promise.reject(error));
+axiosInstance.interceptors.request.use(
+    (config) => {
+      const accessToken = localStorage.getItem('accessToken');
+      if (accessToken) {
+        config.headers.Authorization = `Bearer ${accessToken}`;
+      }
+      return config;
+    },
+    (error) => Promise.reject(error)
+);
 
 // 리프레시 토큰 요청 함수
 async function refreshAccessToken() {

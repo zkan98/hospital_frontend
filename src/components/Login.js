@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axiosInstance from '../axiosInstance';
 import { useNavigate } from 'react-router-dom';
 
-function Login() {
+function Login({ setIsLoggedIn }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
@@ -16,6 +16,9 @@ function Login() {
       localStorage.setItem('accessToken', response.data.accessToken);
       localStorage.setItem('refreshToken', response.data.refreshToken);
       localStorage.setItem('userId', response.data.userId);
+
+      // 로그인 상태 업데이트
+      setIsLoggedIn(true);
 
       // 로그인 성공 시 메인 페이지로 이동
       navigate('/');

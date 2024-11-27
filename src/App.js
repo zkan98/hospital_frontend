@@ -11,14 +11,48 @@ import Register from './components/Register';
 import axiosInstance from './axiosInstance';
 import './App.css';
 
+function isTokenValid(token) {
+  if (!token) return false;
+
+  const payload = JSON.parse(atob(token.split('.')[1]));
+  const currentTime = Math.floor(Date.now() / 1000);
+
+  return payload.exp > currentTime; // 토큰 만료 시간과 현재 시간 비교
+}
+
 function App() {
   const [hospitals, setHospitals] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedHospital, setSelectedHospital] = useState(null);
   const [mapCenter, setMapCenter] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('accessToken'));
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const itemsPerPage = 10;
+
+  useEffect(() => {
+    const token = localStorage.getItem('accessToken');
+    if (token && isTokenValid(token)) {
+      setIsLoggedIn(true);
+    } else {
+      localStorage.clear();
+      setIsLoggedIn(false);
+    }
+
+    navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const location = {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          };
+          setMapCenter(location);
+        },
+        (error) => {
+          const defaultLocation = { latitude: 37.5665, longitude: 126.9780 };
+          setMapCenter(defaultLocation);
+        },
+        { enableHighAccuracy: true }
+    );
+  }, []);
 
   const handleSearch = async () => {
     if (!searchTerm.trim()) return;
@@ -48,23 +82,6 @@ function App() {
       longitude: hospital.longitude,
     });
   };
-
-  useEffect(() => {
-    navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const location = {
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-          };
-          setMapCenter(location);
-        },
-        (error) => {
-          const defaultLocation = { latitude: 37.5665, longitude: 126.9780 };
-          setMapCenter(defaultLocation);
-        },
-        { enableHighAccuracy: true }
-    );
-  }, []);
 
   return (
       <Router>
@@ -121,7 +138,7 @@ function App() {
                   </div>
                 }
             />
-            <Route path="/login" element={<Login />} />
+            <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} />} />
             <Route path="/register" element={<Register />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

@@ -20,7 +20,7 @@ const MapComponent = ({ hospitals, mapCenter, setMapCenter, setHospitals, setSel
         const center = mapRef.current.getCenter();
         const newCenter = { latitude: center.lat(), longitude: center.lng() };
         setMapCenter(newCenter);
-        fetchHospitals(newCenter.latitude, newCenter.longitude);
+        fetchHospitals(newCenter.latitude, newCenter.longitude); // 새로운 위치에서 병원 데이터 로드
       });
     }
   }, [mapCenter, setMapCenter]);
@@ -95,6 +95,7 @@ const MapComponent = ({ hospitals, mapCenter, setMapCenter, setHospitals, setSel
     initializeMap();
     if (mapRef.current && mapCenter) {
       mapRef.current.setCenter(new window.naver.maps.LatLng(mapCenter.latitude, mapCenter.longitude));
+      fetchHospitals(mapCenter.latitude, mapCenter.longitude); // 초기 병원 데이터 로드
     }
   }, [initializeMap, mapCenter]);
 

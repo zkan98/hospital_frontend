@@ -65,11 +65,17 @@ const Header = ({ isLoggedIn, onLogout, searchTerm, setSearchTerm, onSearch, set
         </div>
         <div className="user-profile">
           {isLoggedIn ? (
-              <button onClick={onLogout}>로그아웃</button>
+              <button onClick={onLogout} style={{ padding: '5px 10px' }}>
+                로그아웃
+              </button>
           ) : (
               <>
-                <button onClick={() => (window.location.href = '/login')}>로그인</button>
-                <button onClick={() => (window.location.href = '/register')}>회원가입</button>
+                <button onClick={() => (window.location.href = '/login')} style={{ padding: '5px 10px' }}>
+                  로그인
+                </button>
+                <button onClick={() => (window.location.href = '/register')} style={{ padding: '5px 10px' }}>
+                  회원가입
+                </button>
               </>
           )}
         </div>
