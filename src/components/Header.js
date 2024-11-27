@@ -37,9 +37,8 @@ const Header = ({ isLoggedIn, onLogout, searchTerm, setSearchTerm, onSearch, set
       <header>
         <h1
             onClick={() => (window.location.href = '/')}
-            style={{ cursor: 'pointer', color: 'blue' }}
         >
-          병원 추천 서비스
+          힐스팟
         </h1>
         <div className="search-bar">
           <input
