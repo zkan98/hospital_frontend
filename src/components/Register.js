@@ -12,7 +12,7 @@ function Register() {
     e.preventDefault();
     try {
       // 백엔드 서버 IP 주소와 포트로 수정
-      await axios.post('http://healspot.life:8080/api/users/register', { username, password, email });
+      await axios.post('http://3.36.148.12:8080/api/users/register', { username, password, email });
       alert('회원가입이 성공적으로 완료되었습니다.');
       // 회원가입 성공 후 로그인 페이지로 이동
       navigate('/login');

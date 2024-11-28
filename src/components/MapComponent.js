@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useCallback, useState } from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 import axiosInstance from '../axiosInstance';
 
 const MapComponent = ({ hospitals, mapCenter, setMapCenter, setHospitals, setSelectedHospital, selectedHospital }) => {
@@ -6,14 +6,9 @@ const MapComponent = ({ hospitals, mapCenter, setMapCenter, setHospitals, setSel
   const markersRef = useRef([]);
   const infoWindowRef = useRef(null);
 
-  // 오류 방지를 위한 기본값
-  const defaultCenter = { latitude: 37.5665, longitude: 126.9788 }; // 서울의 기본 좌표 (예시)
-
-  // 지도 초기화
   const initializeMap = useCallback(() => {
-    if (!mapCenter) return; // mapCenter가 없으면 초기화하지 않음
+    if (!mapCenter) return;
 
-    // mapCenter가 있을 때만 실행
     if (!mapRef.current) {
       mapRef.current = new window.naver.maps.Map('map', {
         center: new window.naver.maps.LatLng(mapCenter.latitude, mapCenter.longitude),
@@ -30,7 +25,6 @@ const MapComponent = ({ hospitals, mapCenter, setMapCenter, setHospitals, setSel
     }
   }, [mapCenter, setMapCenter]);
 
-  // 병원 마커 추가
   const addHospitalMarkers = useCallback(
       (hospitalData) => {
         if (!mapRef.current) return;
@@ -40,33 +34,29 @@ const MapComponent = ({ hospitals, mapCenter, setMapCenter, setHospitals, setSel
         markersRef.current = [];
 
         hospitalData.forEach((hospital) => {
-          // 병원의 위도와 경도가 존재할 때만 마커 추가
-          if (hospital.latitude && hospital.longitude) {
-            const marker = new window.naver.maps.Marker({
-              position: new window.naver.maps.LatLng(hospital.latitude, hospital.longitude),
-              map: mapRef.current,
-              title: hospital.name,
-            });
+          const marker = new window.naver.maps.Marker({
+            position: new window.naver.maps.LatLng(hospital.latitude, hospital.longitude),
+            map: mapRef.current,
+            title: hospital.name,
+          });
 
-            // 마커 클릭 이벤트 추가
-            window.naver.maps.Event.addListener(marker, 'click', () => {
-              displayInfoWindow(marker, hospital);
-            });
+          // 마커 클릭 이벤트 추가
+          window.naver.maps.Event.addListener(marker, 'click', () => {
+            displayInfoWindow(marker, hospital);
+          });
 
-            marker.hospitalId = hospital.id; // 마커에 병원 ID 저장
-            markersRef.current.push(marker);
+          marker.hospitalId = hospital.id; // 마커에 병원 ID 저장
+          markersRef.current.push(marker);
 
-            // 선택된 병원과 일치하면 InfoWindow 표시
-            if (selectedHospital && selectedHospital.id === hospital.id) {
-              displayInfoWindow(marker, hospital, false); // 드래그를 방지
-            }
+          // 선택된 병원과 일치하면 InfoWindow 표시
+          if (selectedHospital && selectedHospital.id === hospital.id) {
+            displayInfoWindow(marker, hospital, false); // 드래그를 방지
           }
         });
       },
       [selectedHospital]
   );
 
-  // InfoWindow 표시
   const displayInfoWindow = (marker, hospital, shouldMoveCenter = true) => {
     if (infoWindowRef.current) {
       infoWindowRef.current.close();
@@ -78,48 +68,44 @@ const MapComponent = ({ hospitals, mapCenter, setMapCenter, setHospitals, setSel
 
     infoWindow.open(mapRef.current, marker);
     infoWindowRef.current = infoWindow;
+
     if (shouldMoveCenter) {
-      mapRef.current.setCenter(marker.getPosition());
+      // 지도 중심을 마커 위치로 이동
+      const markerPosition = marker.getPosition();
+      mapRef.current.setCenter(markerPosition);
     }
+
+    setSelectedHospital(hospital);
   };
 
-  // 병원 정보 가져오기
   const fetchHospitals = async (latitude, longitude) => {
     try {
-      const response = await axiosInstance.get(
-          `/hospitals/nearby?latitude=${latitude}&longitude=${longitude}`
-      );
-      setHospitals(response.data);
+      const response = await axiosInstance.get('/hospitals/nearby', {
+        params: { latitude, longitude },
+      });
+      const hospitalData = response.data;
+      setHospitals(hospitalData);
+      addHospitalMarkers(hospitalData);
     } catch (error) {
-      console.error('병원 데이터 가져오기 실패:', error);
-      alert('병원 데이터를 가져오는 데 실패했습니다.');
+      console.error('병원 데이터 가져오기 실패:', error.response || error.message);
     }
   };
 
-  // 초기 맵과 병원 데이터 로드
   useEffect(() => {
-    if (mapCenter?.latitude && mapCenter?.longitude) {
-      initializeMap();
-      fetchHospitals(mapCenter.latitude, mapCenter.longitude);
-    } else {
-      // mapCenter가 없으면 기본 위치(서울)로 설정
-      setMapCenter(defaultCenter);
-      fetchHospitals(defaultCenter.latitude, defaultCenter.longitude);
+    initializeMap();
+    if (mapRef.current && mapCenter) {
+      mapRef.current.setCenter(new window.naver.maps.LatLng(mapCenter.latitude, mapCenter.longitude));
+      fetchHospitals(mapCenter.latitude, mapCenter.longitude); // 초기 병원 데이터 로드
     }
-  }, [initializeMap, mapCenter, setMapCenter]);
+  }, [initializeMap, mapCenter]);
 
-  // 병원 데이터에 따라 마커 업데이트
   useEffect(() => {
-    if (hospitals && hospitals.length > 0) {
+    if (hospitals) {
       addHospitalMarkers(hospitals);
     }
   }, [hospitals, addHospitalMarkers]);
 
-  return (
-      <div id="map" style={{ width: '100%', height: '500px' }}>
-        {/* 지도 표시를 위한 div */}
-      </div>
-  );
+  return <div id="map" style={{ width: '100%', height: '100%' }} />;
 };
 
 export default MapComponent;
