@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const axiosInstance = axios.create({
-  baseURL: 'https://localhost:8443/api', // 실제 백엔드 서버 IP 및 HTTPS로 변경
+  baseURL: 'https://healspot.life:8443/api', // 실제 백엔드 서버 IP 및 HTTPS로 변경
 });
 
 // 요청 시 액세스 토큰 추가
